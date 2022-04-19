@@ -15,7 +15,7 @@ export default class Sprite {
     this.framesMax = framesMax;
     this.framesCurrent = 0;
     this.framesElapsed = 0;
-    this.framesHold = 4;
+    this.framesHold = 5;
     this.offset = offset;
   }
 
@@ -36,8 +36,9 @@ export default class Sprite {
   animateFrames() {
     this.framesElapsed++;
     if (this.framesElapsed % this.framesHold === 0) {
-      if (this.framesCurrent < this.framesMax - 1) this.framesCurrent++;
-      else this.framesCurrent = 0;
+      if (this.framesCurrent < this.framesMax - 1) {
+        this.framesCurrent++;
+      } else this.framesCurrent = 0;
     }
   }
 

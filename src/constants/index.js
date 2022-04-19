@@ -12,3 +12,6 @@ export const detectColision = ({ colisor, colisorTwo }) => {
     colisor.hitBox.position.y <= colisorTwo.position.y + colisorTwo.height
   );
 };
+
+export const determineFrame = (player) =>
+  (player.sprites.framesMax > 2 && 4) || 2;

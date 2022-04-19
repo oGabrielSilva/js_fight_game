@@ -8,8 +8,15 @@ import React, {
 import { gsap } from 'gsap';
 import Sprite from '../components/Sprite';
 import Fighter from '../components/Fighter';
-import { damage, detectColision, timer, velocityX } from '../constants';
+import {
+  damage,
+  detectColision,
+  determineFrame,
+  timer,
+  velocityX,
+} from '../constants';
 import './Game.css';
+import * as Character from '../constants/character';
 
 function Game() {
   const canvas = useRef(null);
@@ -54,9 +61,10 @@ function Game() {
       context.fillStyle = 'black';
       context.fillRect(0, 0, canvas.current.width, canvas.current.height);
       background.update({ context });
-      shop.update({ context });
-      context.fillStyle = 'rgba(255, 255, 255, 0.15)';
+      console.log(shop.update);
+      context.fillStyle = 'rgba(255, 255, 255, 0.45)';
       context.fillRect(0, 0, canvas.current.width, canvas.current.height);
+
       player.update({
         context,
         canvas,
@@ -71,9 +79,11 @@ function Game() {
       if (!player.dead) {
         if (aIsPress && lastKey === 'a') {
           player.velocity.x = -velocityX;
+          if (player.velocity.x < 0) player.flipX = true;
           player.switchSprites('run');
         } else if (dIsPress && lastKey === 'd') {
           player.velocity.x = velocityX;
+          if (player.velocity.x > 0) player.flipX = false;
           player.switchSprites('run');
         } else {
           player.velocity.x = 0;
@@ -105,7 +115,7 @@ function Game() {
       if (
         detectColision({ colisor: player, colisorTwo: playerTwo }) &&
         playerIsAttacking &&
-        player.framesCurrent === 4
+        player.framesCurrent === determineFrame(player)
       ) {
         console.log('go player');
         setPlayerIsAttacking(false);
@@ -119,7 +129,7 @@ function Game() {
       if (
         detectColision({ colisor: playerTwo, colisorTwo: player }) &&
         playerTwoIsAttacking &&
-        playerTwo.framesCurrent === 2
+        playerTwo.framesCurrent === determineFrame(playerTwo)
       ) {
         console.log('go player two');
         setPlayerTwoIsAttacking(false);
@@ -130,10 +140,13 @@ function Game() {
         });
       }
 
-      if (player.framesCurrent === 4 && playerIsAttacking)
+      if (player.framesCurrent === determineFrame(player) && playerIsAttacking)
         setPlayerIsAttacking(false);
 
-      if (playerTwo.framesCurrent === 2 && playerTwoIsAttacking)
+      if (
+        playerTwo.framesCurrent === determineFrame(playerTwo) &&
+        playerTwoIsAttacking
+      )
         setPlayerTwoIsAttacking(false);
     }
   };
@@ -143,7 +156,7 @@ function Game() {
     setBackground(
       new Sprite({
         position: { x: 0, y: 0 },
-        imageSrc: './assets/images/background.png',
+        imageSrc: './assets/images/backgroundF.png',
       }),
     );
     setShop(
@@ -155,99 +168,12 @@ function Game() {
       }),
     );
     setPlayer(
-      new Fighter({
-        position: { x: 0, y: 0 },
-        velocity: { x: 0, y: 2 },
-        imageSrc: './assets/images/samuraiMack/Idle.png',
-        framesMax: 8,
-        offset: { x: 215, y: 157 },
-        scale: 2.5,
-        sprites: {
-          idle: {
-            imageSrc: './assets/images/samuraiMack/Idle.png',
-            framesMax: 8,
-          },
-          run: {
-            imageSrc: './assets/images/samuraiMack/Run.png',
-            framesMax: 8,
-          },
-          jump: {
-            imageSrc: './assets/images/samuraiMack/Jump.png',
-            framesMax: 2,
-          },
-          fall: {
-            imageSrc: './assets/images/samuraiMack/Fall.png',
-            framesMax: 2,
-          },
-          attack1: {
-            imageSrc: './assets/images/samuraiMack/Attack1.png',
-            framesMax: 6,
-          },
-          takeHit: {
-            imageSrc: './assets/images/samuraiMack/Take Hit.png',
-            framesMax: 4,
-          },
-          death: {
-            imageSrc: './assets/images/samuraiMack/Death.png',
-            framesMax: 6,
-          },
-        },
-        attackBox: {
-          offset: {
-            x: 70,
-            y: 50,
-          },
-          width: 180,
-          height: 50,
-        },
-      }),
+      new Fighter({ ...Character.thunderWarrior, position: { x: 50, y: 0 } }),
     );
     setPlayerTwo(
       new Fighter({
-        position: { x: 400, y: 100 },
-        velocity: { x: 0, y: 2 },
-        imageSrc: './assets/images/kenji/Idle.png',
-        framesMax: 4,
-        offset: { x: 215, y: 157 },
-        scale: 2.4,
-        sprites: {
-          idle: {
-            imageSrc: './assets/images/kenji/Idle.png',
-            framesMax: 4,
-          },
-          run: {
-            imageSrc: './assets/images/kenji/Run.png',
-            framesMax: 8,
-          },
-          jump: {
-            imageSrc: './assets/images/kenji/Jump.png',
-            framesMax: 2,
-          },
-          fall: {
-            imageSrc: './assets/images/kenji/Fall.png',
-            framesMax: 2,
-          },
-          attack1: {
-            imageSrc: './assets/images/kenji/Attack1.png',
-            framesMax: 4,
-          },
-          takeHit: {
-            imageSrc: './assets/images/kenji/Take hit.png',
-            framesMax: 3,
-          },
-          death: {
-            imageSrc: './assets/images/kenji/Death.png',
-            framesMax: 7,
-          },
-        },
-        attackBox: {
-          offset: {
-            x: -150,
-            y: 50,
-          },
-          width: 150,
-          height: 50,
-        },
+        ...Character.samurai,
+        position: { x: 888, y: 0 },
       }),
     );
   }, [canvas]);
@@ -297,10 +223,12 @@ function Game() {
       switch (e.key) {
         case 'd':
           setDIsPress(true);
+          setAIsPress(false);
           setLastKey('d');
           break;
         case 'a':
           setAIsPress(true);
+          setDIsPress(false);
           setLastKey('a');
           break;
         case 'w':

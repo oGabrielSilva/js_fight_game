@@ -36,6 +36,7 @@ export default class Fighter extends Sprite {
     this.framesCurrent = 0;
     this.framesElapsed = 0;
     this.framesHold = 5;
+    this.flipX = false;
     this.sprites = sprites;
     this.dead = false;
 
@@ -73,36 +74,40 @@ export default class Fighter extends Sprite {
     }
 
     if (
-      this.image === this.sprites.attack1.image &&
+      (this.image === this.sprites.attack1.image ||
+        this.image === this.sprites.attack1Flip.image) &&
       this.framesCurrent < this.sprites.attack1.framesMax - 1
     )
-      return console.log(
-        'Frame error: ',
-        this.framesCurrent,
-        `: ${this.sprites.attack1.framesMax}`,
-      );
+      return;
 
     if (
       this.image === this.sprites.takeHit.image &&
       this.framesCurrent < this.sprites.takeHit.framesMax - 1
     )
-      return console.log(
-        'Frame error: ',
-        this.framesCurrent,
-        `: ${this.sprites.attack1.framesMax}`,
-      );
+      return;
 
     switch (id) {
       case 'idle':
-        if (this.image !== this.sprites.idle.image) {
-          this.framesCurrent = 0;
-          this.image = this.sprites.idle.image;
+        if (
+          this.image !== this.sprites.idle.image &&
+          this.image !== this.sprites.idleFlip.image
+        ) {
+          this.image =
+            (this.flipX && this.sprites.idleFlip.image) ||
+            this.sprites.idle.image;
           this.framesMax = this.sprites.idle.framesMax;
+          this.framesCurrent = 0;
         }
         break;
       case 'run':
-        if (this.image !== this.sprites.run.image) {
-          this.image = this.sprites.run.image;
+        if (
+          this.image !== this.sprites.run.image &&
+          this.image !== this.sprites.runFlip.image
+        ) {
+          this.image =
+            this.flipX && this.velocity.x < 0
+              ? this.sprites.runFlip.image
+              : this.sprites.run.image;
           this.framesMax = this.sprites.run.framesMax;
           this.framesCurrent = 0;
         }
@@ -122,8 +127,13 @@ export default class Fighter extends Sprite {
         }
         break;
       case 'attack1':
-        if (this.image !== this.sprites.attack1.image) {
-          this.image = this.sprites.attack1.image;
+        if (
+          this.image !== this.sprites.attack1.image &&
+          this.image !== this.sprites.attack1Flip.image
+        ) {
+          this.image =
+            (this.flipX && this.sprites.attack1Flip.image) ||
+            this.sprites.attack1.image;
           this.framesMax = this.sprites.attack1.framesMax;
           this.framesCurrent = 0;
         }
